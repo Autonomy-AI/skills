@@ -1,0 +1,13 @@
+{
+  "name": "using-autonomy",
+  "description": "Drive the Autonomy coding platform through its MCP server - set up projects, run coding tasks, enable Full Mode, and ship to developers.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Autonomy",
+    "url": "https://autonomyai.io"
+  },
+  "homepage": "https://docs.autonomyai.io",
+  "skills": [
+    "./using-autonomy"
+  ]
+}
