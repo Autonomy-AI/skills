@@ -1,13 +1,14 @@
 {
   "name": "using-autonomy",
-  "description": "Drive the Autonomy coding platform through its MCP server - set up projects, run coding tasks, enable Full Mode, and ship to developers.",
-  "version": "0.1.0",
+  "description": "Drive the Autonomy coding platform through its MCP server - set up projects, run coding tasks, enable Full Mode, ship to developers, and move a local Claude Code / Codex / Cursor setup into Fei Studio.",
+  "version": "0.2.0",
   "author": {
     "name": "Autonomy",
     "url": "https://autonomyai.io"
   },
   "homepage": "https://docs.autonomyai.io",
   "skills": [
-    "./using-autonomy"
+    "./using-autonomy",
+    "./move-to-studio"
   ]
 }

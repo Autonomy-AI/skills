@@ -16,9 +16,9 @@ the work in a sandbox - you orchestrate and report progress.
 
 ## First moves
 
-1. `list_projects` - pick a `project_id` and (once `READY`) a `workspace_id`.
-2. If the project isn't `READY`, load **setup.md** and initialize it first.
-3. `start_task(project_id, workspace_id, instruction)` - returns a `task_id`; work runs in the background.
+1. `list_projects` - pick a `project_id`. A project with an empty `workspaces` list is usually gitless: it runs planner, discover and prototype tasks only.
+2. To connect a repository to a project, load **setup.md**.
+3. `start_task(project_id, instruction)` - returns a `task_id`; work runs in the background. Pass `workspace_id` only if `start_task` asks for one.
 4. Poll `get_task` until terminal (`COMPLETED` / `DISCARDED`) or awaiting input. Don't block.
 5. Review with `get_task_messages` and `get_task_pr_diff`; iterate with `continue_task`.
 6. On the user's approval, `complete_task` to ship (opens/updates the PR).
@@ -34,8 +34,9 @@ Read only the file that matches what the user is doing - not all of them.
 
 ## Rules
 
-- **Never `complete_task` without explicit user approval** - it opens a PR for their developers. It is the irreversible "send to devs" action.
-- **Poll, don't block.** Background tools (`start_task`, `continue_task`, `complete_task`, `update_task_env`) return immediately; report progress from `get_task`.
+- **Never `complete_task` without explicit user approval** - it opens a PR for their developers. It is the irreversible "ship to devs" action.
+- **`start_task` is for new work only.** If the user is refining, broadening, or correcting something an existing task already covers, `continue_task` on that `task_id`. Two tasks can't be combined once they exist, so a follow-up sent as a new task splits one line of work permanently. If you're unsure, `list_tasks` first and ask which they mean. An archived or discarded task can't be continued - start a new one there.
+- **Poll, don't block.** Background tools (`start_task`, `continue_task`, `complete_task`, `send_setup_message`) return immediately; report progress from `get_task`.
 - **You already hold the repo context** - set project config yourself rather than asking a setup agent.
 
 Full documentation: https://docs.autonomyai.io
