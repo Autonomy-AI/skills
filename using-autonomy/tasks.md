@@ -8,6 +8,8 @@
    immediately; the work runs in the background.
 3. Poll `get_task(project_id, task_id)` until the status is terminal
    (`COMPLETED` / `DISCARDED`) or it needs input. Don't block - report progress.
+   In a chat host that renders MCP Apps (Claude, ChatGPT) the task tools show a
+   live task card that updates itself, so skip the polling there.
 4. To reply or redirect: `continue_task(project_id, task_id, instruction)`.
    Sent mid-run it answers `queued: true` - parked in the change-request line, not
    dropped, so don't re-send. `get_task_queue` reads that line back: `queued` still
