@@ -5,8 +5,9 @@ Autonomy platform through the `autonomy` MCP server.
 
 These are authored here, next to the MCP server, as the single source of truth
 (`using-autonomy` also backs the MCP server's built-in `load_autonomy_skill` tool
-and the prose guides on docs.autonomyai.io; `move-to-studio` ships only as an Agent
-Skill, since it runs local scripts). A CI job mirrors this directory to the
+and the prose guides on docs.autonomyai.io; `move-to-studio` is served by
+`load_autonomy_skill` straight from its folder here, companion files and scripts
+included, so the plugin and the MCP server read the same files). A CI job mirrors this directory to the
 public **`Autonomy-AI/skills`** repo, which is the install target for the Claude
 Code plugin - a public repo is required because a private monorepo folder can't
 be a public clone target.

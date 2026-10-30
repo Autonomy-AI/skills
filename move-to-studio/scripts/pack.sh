@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # Pack what move-to-studio uploads into Fei Studio, and flag likely secrets.
 #   pack.sh inventory <repo_dir>              list memory files, personal instructions and skills
-#   pack.sh memory <repo_dir> <out_dir>       zip the Claude Code auto-memory for <repo_dir>,
-#                                             plus ~/.claude/CLAUDE.md as GLOBAL-CLAUDE.md
-#   pack.sh docs <dir|owner/repo> <out_dir>   zip the documents and images in a folder or repo,
-#                                             never packing keys, credentials, env files or private files
-# Every zip is scanned first; a line that looks like a secret prints as SECRET? <file>:<line>,
-# never with its value. Then the zip prints how to upload it.
+#   pack.sh memory <repo_dir> <out_dir>       stage the Claude Code auto-memory for <repo_dir>, plus
+#                                             ~/.claude/CLAUDE.md as GLOBAL-CLAUDE.md, in <out_dir>/memory/
+#   pack.sh docs <dir|owner/repo> <out_dir>   stage the documents and images in a folder or repo in
+#                                             <out_dir>/docs/, never keys, credentials, env or private files
+#   pack.sh scan <dir>                        re-scan a staged folder after taking an entry out of it,
+#                                             and rebuild the zip beside it
+# Each mode scans what it staged first; a line that looks like a secret prints as
+# SECRET? <file>:<line>, never with its value. Then it zips the folder and says how to upload it.
 set -euo pipefail
 
-SECRET_RE='((^|[^A-Za-z0-9])sk-(ant-[a-z0-9]+-|proj-|live_)?[A-Za-z0-9_]{24,}|[sr]k_(live|test)_[A-Za-z0-9]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[abprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|-----BEGIN [A-Z ]*PRIVATE KEY|eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}|://[^/:@ ]+:[^/@ ]+@|hooks\.slack\.com/services/[A-Za-z0-9/]{20,})'
+SECRET_RE='((^|[^A-Za-z0-9])sk-(ant-)?[A-Za-z0-9_-]{16,}|[sr]k_(live|test)_[A-Za-z0-9]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[abceoprs]-[A-Za-z0-9-]{10,}|xapp-[A-Za-z0-9-]{10,}|glpat-[A-Za-z0-9_-]{16,}|(AKIA|ASIA)[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|npm_[A-Za-z0-9]{36}|figd_[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}|-----BEGIN [A-Z ]*PRIVATE KEY|://[^/:@ ]+:[^/@ ]+@|hooks\.slack\.com/services/[A-Za-z0-9/]{20,})'
 # Matched case-insensitively, so AWS_SECRET_ACCESS_KEY= and DATABASE_PASSWORD= count too.
 SECRET_KEYWORD_RE='([A-Za-z0-9_]*(key|secret|token|password)[A-Za-z0-9_]*["'"'"' ]*[:=] *["'"'"']?[A-Za-z0-9/+_.-]{16,}|bearer +[A-Za-z0-9._~+/-]{16,})'
 
@@ -89,9 +91,10 @@ case "${1:-}" in
     find "$tmp" -name '.*' -prune -exec rm -rf {} +
     if [ -z "$(ls -A "$tmp")" ]; then echo "nothing to pack: no memory at $mem and no ~/.claude/CLAUDE.md"; exit 1; fi
     scan "$tmp"
-    mkdir -p "$out"; out=$(cd "$out" && pwd -P); rm -f "$out/memory.zip"
-    (cd "$tmp" && zip -qr "$out/memory.zip" .)
-    echo "zip $out/memory.zip ($(find "$tmp" -type f | wc -l | tr -d ' ') files)"
+    mkdir -p "$out"; out=$(cd "$out" && pwd -P); rm -rf "$out/memory" "$out/memory.zip"
+    cp -R "$tmp" "$out/memory"
+    (cd "$out/memory" && zip -qr "$out/memory.zip" .)
+    echo "staged $out/memory ($(find "$out/memory" -type f | wc -l | tr -d ' ') files)"
     upload_hint "$out/memory.zip"
     ;;
   docs)
@@ -112,10 +115,26 @@ case "${1:-}" in
     if [ -z "$(ls -A .)" ]; then echo "nothing to pack: no documents or images in $src"; exit 1; fi
     cd - >/dev/null
     scan "$tmp/src"
-    rm -f "$out/docs.zip"
-    (cd "$tmp/src" && zip -qr "$out/docs.zip" .)
-    echo "zip $out/docs.zip ($(find "$tmp/src" -type f | wc -l | tr -d ' ') files)"
+    rm -rf "$out/docs" "$out/docs.zip"
+    cp -R "$tmp/src" "$out/docs"
+    (cd "$out/docs" && zip -qr "$out/docs.zip" .)
+    echo "staged $out/docs ($(find "$out/docs" -type f | wc -l | tr -d ' ') files)"
     upload_hint "$out/docs.zip"
     ;;
-  *) sed -n 2,9p "$0"; exit 2 ;;
+  scan)
+    dir="${2:?staged dir}"
+    [ -d "$dir" ] || { echo "not a folder: $dir"; exit 1; }
+    dir=$(cd "$dir" && pwd -P)
+    scan "$dir"
+    # The zip beside a staged folder was built from it before any edit, so it
+    # would still carry an entry the person just took out. Rebuild it.
+    if [ -f "$dir.zip" ]; then
+      need zip
+      rm -f "$dir.zip"
+      (cd "$dir" && zip -qr "$dir.zip" .)
+      echo "rebuilt $dir.zip ($(find "$dir" -type f | wc -l | tr -d ' ') files)"
+      upload_hint "$dir.zip"
+    fi
+    ;;
+  *) sed -n 2,11p "$0"; exit 2 ;;
 esac

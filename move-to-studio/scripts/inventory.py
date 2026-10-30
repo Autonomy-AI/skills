@@ -30,7 +30,17 @@ CURRENT_URL = {
 COVERED_BY_STUDIO = {"connect.composio.dev": "Studio Connectors already covers this"}
 ENV_ARG_FLAGS = ("-e", "--env")  # docker run -e NAME=value
 HEADER_ARG_FLAGS = ("--header", "-H")  # mcp-remote <url> --header "Authorization: ..."
-SECRET_PARAM = re.compile(r"key|token|secret|password|auth|sig", re.IGNORECASE)
+SECRET_WORDS = (
+    "key",
+    "token",
+    "secret",
+    "password",
+    "auth",
+    "authorization",
+    "sig",
+    "signature",
+    "credential",
+)
 # Only these take a hosted server's URL as an arg; any other http arg is the server's own setting.
 BRIDGE = re.compile(r"(?:.*/)?(?:mcp-remote|mcp-proxy)(?:@.*)?")
 # docker run flags that take a value, so the image is the first arg that is neither.
@@ -52,8 +62,24 @@ DOCKER_VALUE_FLAGS = {
     "--platform",
     "-l",
     "--label",
+    "--pull",
+    "--cpus",
+    "-m",
+    "--memory",
+    "--add-host",
+    "--cap-add",
+    "--restart",
+    "--device",
+    "--gpus",
 }
 MASK = "<hidden>"
+
+
+def _secret_name(name: str) -> bool:
+    """A credential-named flag or query key: its last `-`/`_`/`.` segment ends in
+    a credential word, so `--api-key` and `apiKey` match while `--auth-timeout`
+    and `--design-system` do not."""
+    return re.split(r"[-_.]", name.strip("-").lower())[-1].endswith(SECRET_WORDS)
 
 
 def _looks_secret(value: str) -> bool:
@@ -78,10 +104,13 @@ def _safe_url(url: str) -> tuple[str, bool]:
     netloc = (parts.hostname or "") + (f":{parts.port}" if parts.port else "")
     segments = [MASK if _looks_secret(seg) else seg for seg in parts.path.split("/")]
     query = [
-        (k, MASK if SECRET_PARAM.search(k) or _looks_secret(v) else v)
+        (
+            MASK if _looks_secret(k) else k,
+            MASK if _secret_name(k) or _looks_secret(v) else v,
+        )
         for k, v in parse_qsl(parts.query, keep_blank_values=True)
     ]
-    masked = masked or MASK in segments or any(v == MASK for _, v in query)
+    masked = masked or MASK in segments or any(MASK in pair for pair in query)
     printable = urlunsplit(
         (parts.scheme, netloc, "/".join(segments), urlencode(query, safe="<>"), "")
     )
@@ -90,9 +119,10 @@ def _safe_url(url: str) -> tuple[str, bool]:
 
 def _json(path: Path) -> dict:
     try:
-        return json.loads(path.read_text())
+        parsed = json.loads(path.read_text())
     except Exception:
         return {}
+    return parsed if isinstance(parsed, dict) else {}
 
 
 def _toml(path: Path) -> dict:
@@ -159,7 +189,7 @@ def _scan_args(args: list[str]) -> tuple[list[str], list[str], str | None]:
             continue
         flag = arg.split("=", 1)[0]
         if flag in ENV_ARG_FLAGS + HEADER_ARG_FLAGS or (
-            flag.startswith("-") and SECRET_PARAM.search(flag)
+            flag.startswith("-") and _secret_name(flag)
         ):
             kind = {"-e": "env", "--env": "env", "--header": "headers", "-H": "headers"}
             auth.append(kind.get(flag, "key-arg"))
@@ -183,7 +213,7 @@ def _docker_image(args: list[str]) -> str | None:
             takes_value = False
         elif arg.startswith("-"):
             takes_value = "=" not in arg and (
-                arg in DOCKER_VALUE_FLAGS or SECRET_PARAM.search(arg) is not None
+                arg in DOCKER_VALUE_FLAGS or _secret_name(arg)
             )
         else:
             return arg
@@ -202,6 +232,7 @@ def classify(cfg: dict) -> dict:
         auth.append("env")
     if cfg.get("bearer_token_env_var") or cfg.get("bearer_token"):
         auth.append("bearer")
+    auth = list(dict.fromkeys(auth))
     # A local bridge to a hosted server (npx mcp-remote <url>) is that hosted server.
     if any(BRIDGE.fullmatch(a) for a in [command, *raw_args]):
         url = url or arg_url
@@ -218,16 +249,14 @@ def classify(cfg: dict) -> dict:
         elif auth:
             route = "needs the person: key/header (try Connectors sign-in first, else they add it)"
         else:
-            route = "mcp-servers: add this URL, then Connect"
+            route = "connectors first, else org MCP servers: add this URL, then Connect"
         return {
             "transport": "http",
             "target": url,
             "auth": auth or ["oauth-or-none"],
             "route": route,
         }
-    image = (
-        _docker_image(raw_args) if Path(command).name in ("docker", "podman") else None
-    )
+    image = _docker_image(args) if Path(command).name in ("docker", "podman") else None
     pkg = image or next(
         (
             a

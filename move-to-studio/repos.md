@@ -1,14 +1,14 @@
 # Repos: link the person's repos to a Studio project
 
 This part runs through the MCP tools.
-The exact connect sequence lives in **[../using-autonomy/setup.md](../using-autonomy/setup.md)**, step 1; follow it there rather than from memory.
+The exact connect sequence is step 1 of the setup guide: `load_autonomy_skill(name='setup')` through the MCP, or **[../using-autonomy/setup.md](../using-autonomy/setup.md)** with the plugin installed. Follow it there rather than from memory.
 
 Most of these tools need an **org admin**: `list_available_projects`, `add_projects`, `initialize_project` and `link_project_workspace`.
 If the person is not an admin, make the list of what to link, and hand it to them for an admin.
 
 ## Steps
 
-1. Take the repos `inventory.py` listed (most used first) and ask the person which ones matter to them.
+1. Take the repos `inventory.py` listed (most used first) and ask the person which ones matter to them. With no shell, ask them to name their repos (`owner/name`).
 2. `list_available_projects` (admin) shows every repo the org's Git connection can see and whether it is already linked. A repo that is missing entirely was never granted to Autonomy: the org admin adds it in the Git provider's app settings first.
 3. **Not linked yet:** adding a repo (`add_projects`) and initializing it (`initialize_project`) are org-wide and start Studio's setup for that repo. Do them only if the person is an admin and agrees.
 4. **Ready:** put the main repo on the person's project with `link_project_workspace`, following setup.md. If they have no project yet, `create_project` makes one, but a project can't be deleted afterwards: confirm the exact name with the person first.
