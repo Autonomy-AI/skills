@@ -17,7 +17,7 @@ You write the pages yourself with `write_space_page`, so nothing is rewritten on
    A refusal names the reason (a reserved file name, a full Space, over 1 MB): rename or split that file, and tell the person.
 5. If the source has no home page, write one at `<folder>/README.md` that links to every page.
 6. Check the result against the staged file list:
-   - Project Space: `list_space_pages(project_id)`.
+   - Project Space: `list_space_pages(project_id)`. It lists the project's pages together with its primary repository's; pass `repo_id` to read another linked repository's instead.
    - Personal Space: ask the person to check Spaces → **Mine** in Studio.
 
 ## No shell

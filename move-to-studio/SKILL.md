@@ -48,11 +48,11 @@ If the person also has Claude Code (including the Code tab in the Claude Desktop
 | Local setup | In Studio | Shared with |
 |---|---|---|
 | MCP server or connector (Slack, Linear, Figma, Notion…) | Settings → Connectors, or Settings → MCP servers | Sign-ins: the person. MCP server list: the org |
-| Auto-memory and personal instructions (`~/.claude/CLAUDE.md`) | Personal memory, or workspace memory for repo facts | Personal: the person. Workspace: everyone on the repo |
+| Auto-memory and personal instructions (`~/.claude/CLAUDE.md`) | Personal memory, or repository memory for repo facts | Personal: the person. Repository: everyone who works in that repository |
 | `CLAUDE.md` / `AGENTS.md` / rules inside a repo | Nothing to do: Studio reads them from the checkout | Everyone on the repo |
 | Skill | A skill on the project's repo (`create_skill`) | Everyone on the repo |
 | A folder of docs or notes | A Space | The project, or the person |
-| Repos they work in | A project in Studio, linked to each repo | The org |
+| Repos they work in | A project in Studio, with each repo linked to it (one project can link several) | The org |
 
 ## Then, one part at a time
 

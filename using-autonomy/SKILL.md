@@ -16,9 +16,9 @@ the work in a sandbox - you orchestrate and report progress.
 
 ## First moves
 
-1. `list_projects` - pick a `project_id`. A project with an empty `workspaces` list is usually gitless: it runs planner, discover and prototype tasks only.
+1. `list_projects` - pick a `project_id`. A project with no linked repository is gitless: it runs planner, discover and prototype tasks only.
 2. To connect a repository to a project, load **setup.md**.
-3. `start_task(project_id, instruction)` - returns a `task_id`; work runs in the background. Pass `workspace_id` only if `start_task` asks for one.
+3. `start_task(project_id, instruction)` - returns a `task_id`; work runs in the background.
 4. Poll `get_task` until terminal (`COMPLETED` / `DISCARDED`) or awaiting input. Don't block.
 5. Review with `get_task_messages` and `get_task_pr_diff`; iterate with `continue_task`.
 6. On the user's approval, `complete_task` to ship (opens/updates the PR).
