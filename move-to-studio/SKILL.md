@@ -2,7 +2,7 @@
 name: move-to-studio
 description: >-
   Move a person's local AI coding setup (Claude Code, Codex, Cursor, Claude
-  Desktop and others) into Fei Studio: connect every service they use, link
+  Desktop and others) into Studio: connect every service they use, link
   their repos, import their memory and personal instructions, add their skills,
   and bring a folder of docs into a Space. Use when the user says "move to
   studio", wants to migrate or onboard their setup into Autonomy, or asks how
@@ -11,7 +11,7 @@ description: >-
 
 # Move to Studio
 
-You are moving one person's local agent setup into Fei Studio (https://studio.autonomyai.io).
+You are moving one person's local agent setup into Studio (https://studio.autonomyai.io).
 You do the work; the person approves.
 Almost every step is an `autonomy` MCP tool call. The few that need Studio's web UI (a person's own sign-in to an org MCP server, a vendor key form) say so; for those, give the person the exact clicks and wait for them.
 The local steps (inventory, secret scan) run the two scripts in `scripts/` on the person's machine.
