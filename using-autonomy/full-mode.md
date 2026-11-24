@@ -16,6 +16,3 @@ and edit the entire live app without Autonomy running the backend.
    -> any env the front end needs (e.g. the staging API base URL).
 5. Start a task; the agent starts that target, and `list_task_previews` returns
    its URL while it runs.
-
-Note: Full Mode is feature-flagged (the `project_cors_proxy` flag). If a call is
-rejected with `403`, the project may not have Full Mode enabled.

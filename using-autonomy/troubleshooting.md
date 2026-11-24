@@ -4,8 +4,6 @@
   the `autonomy` server in the MCP client.
 - **410 Gone** -> the call names a removed tool or a replaced id; re-read
   `get_project` for current ids.
-- **403 on preview-config** -> the `project_cors_proxy` (Full Mode) flag is not
-  enabled for this project.
 - **Setup not progressing** -> `get_project` for the setup status;
   `list_env_vars` to spot unset required env vars, then `set_env_var` to fill them.
 - **Repository not READY** -> a just-connected repository is
