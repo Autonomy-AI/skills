@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pack what move-to-studio uploads into Fei Studio, and flag likely secrets.
+# Pack what move-to-studio uploads into AutonomyAI Studio, and flag likely secrets.
 #   pack.sh inventory <repo_dir>              list memory files, personal instructions and skills
 #   pack.sh memory <repo_dir> <out_dir>       stage the Claude Code auto-memory for <repo_dir>, plus
 #                                             ~/.claude/CLAUDE.md as GLOBAL-CLAUDE.md, in <out_dir>/memory/
